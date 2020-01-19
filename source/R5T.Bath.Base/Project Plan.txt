@@ -1,4 +1,29 @@
 R5T.Bath.Base - An IHumanOutput service definition base library for the Bath project.
 
-Goals
+# Goals
 
+Create a service that allows textual output to a human.
+
+
+# Introduction
+
+Human output is different than either logging or console output.
+
+Logging is generally an everything solution. Everything any service thinks is worth logging gets logged, and filtering can only be done by category and log-level. And then everything meeting that filter must then be filted by what is of interest to a human. In short, if logging is to be of use, it must be comprehensive since there is no telling what will eventually be useful. But, to be useful, all the output from everything must be sorted through.
+
+As an aside about logging, if there was a way to dynamically segregate logging messages to specific outputs (such as create a new log file for each server request, then another log file for a run of particular service operation during that server request) then logs could be comprehensive, but also pre-filtered so that everything of interest for a particular aspect is already grouped. The current way to implement this is to grep a comprehensive log file for a particular correlation ID added to all log entries performed by a particular execution path.
+
+Use of the console is fraught with difficulty. For example, logging might be setup to log to the console instead of a file. In this case any output to the console will be swamped by log messages. Elsewhere, the console might not even be visible during program execution. For example, when using a web-interface or GUI. Here, an custom service can output these messages to an appropriate display.
+
+The IHumanOutput service provides a service that can be assumed to be read directly by a human. In addition to logging, in addition to the console, the IHumanOutput service allows code to communicate that it has messages for, and that should be available to, a human.
+
+
+# Design
+
+The IHumanOutput service interface provides both synchronous (simple, and output is visible to a human with no delay relative to the state of the program, but slows program output since output to a human is generally a very time-consuming operation) and asynchronous (task-based, and may have a delay relative to program state (which might misleadingly imply an operation had not happened yet when it in fact had), but the program can continue operation during the time-consuming operation of output to a human).
+
+The IHumanOutput interface is NOT divided into IHumanOutputSynchronous and IHumanOutputAsynchronous services. This is because it while various components will get to decide whether they want to update a human in lock-step with execution, or are ok with a delay to allow further execution while the human is updated, the final decision of synchronous or asynchronous will lie with the client application. The client application will specify an implementation type that implements operations either a synchronously or asynchronously.
+
+For example, during debugging a synchronous implmentation (performing async over sync for the asynchronous methods) will be preferrable so that the human is kept up-to-date about program execution. But in production, the performance benefit of continuing program execution will be preferable to having a human be up-to-date.
+
+The implementation might even perform sync-over-async for long-running human update operations.
